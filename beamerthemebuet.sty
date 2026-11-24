@@ -23,7 +23,7 @@
 \setbeamercolor{frametitle}{fg=white,bg=navy}
 \setbeamercolor{foot left}{fg=white,bg=navy}
 \setbeamercolor{foot mid}{fg=navy,bg=steel}
-\setbeamercolor{foot right}{fg=white,bg=navymid}
+\setbeamercolor{foot right}{fg=navy,bg=gray!20}
 \setbeamercolor{item projected}{fg=white,bg=navy}
 
 \setbeamercolor{block title}{fg=white,bg=navy}
@@ -71,16 +71,20 @@
 
 \setbeamertemplate{footline}{%
   \leavevmode\hbox{%
-    \begin{beamercolorbox}[wd=.28\paperwidth,ht=2.4ex,dp=1ex,leftskip=1em]{foot left}%
-      \usebeamerfont{footline}\insertshortauthor
+    \begin{beamercolorbox}[wd=.25\paperwidth,ht=2.4ex,dp=1ex,center]{foot left}%
+      \usebeamerfont{footline}\bfseries\insertshorttitle
     \end{beamercolorbox}%
-    \begin{beamercolorbox}[wd=.62\paperwidth,ht=2.4ex,dp=1ex,center]{foot mid}%
-      \usebeamerfont{footline}\insertshorttitle
+    \begin{beamercolorbox}[wd=.65\paperwidth,ht=2.4ex,dp=1ex,center]{foot mid}%
+      \usebeamerfont{footline}\insertfootmiddle
     \end{beamercolorbox}%
     \begin{beamercolorbox}[wd=.10\paperwidth,ht=2.4ex,dp=1ex,center]{foot right}%
       \usebeamerfont{footline}\insertframenumber\,/\,\inserttotalframenumber
     \end{beamercolorbox}}%
 }
+
+% Text for the middle of the footline (set with \footmiddle{...}; defaults to the author)
+\def\insertfootmiddle{\insertshortauthor}
+\newcommand{\footmiddle}[1]{\def\insertfootmiddle{#1}}
 
 % ---------- Helpers ----------
 \newcommand{\hl}[1]{\textcolor{accent}{\textbf{#1}}}

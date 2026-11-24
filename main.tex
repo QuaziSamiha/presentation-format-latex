@@ -4,10 +4,11 @@
 \usepackage{lmodern}
 \usetheme{buet}
 
-\title[CaPT: Capsule Prompt Tuning with a Single Vector (NeurIPS 2025)]
+\title[CaPT \;$\cdot$\; NeurIPS 2025]
       {All You Need is One:\\Capsule Prompt Tuning with a Single Vector}
-\author[Q. S. Tasnim \& F. Fairooz]{Quazi Samiha Tasnim \and Fawzia Fairooz}
+\author[Quazi Samiha Tasnim \;\&\; Fawzia Fairooz]{Quazi Samiha Tasnim \and Fawzia Fairooz}
 \date{\today}
+\footmiddle{All You Need is One: Capsule Prompt Tuning with a Single Vector}
 
 \hypersetup{pdftitle={All You Need is One: Capsule Prompt Tuning with a Single Vector},
             pdfauthor={Quazi Samiha Tasnim, Fawzia Fairooz}}
@@ -38,7 +39,7 @@
         \textbf{Quazi Samiha Tasnim}\\ ID: 0424052086\\ MSc Engg., CSE Dept, BUET};
   \node[anchor=north, align=center, font=\small] at ([xshift=4.9cm,yshift=-4.95cm]current page.north)
        {{\color{accent}\bfseries Presented By}\\[3pt]
-        \textbf{Fawzia Fairooz}\\ ID: 423052028\\ MSc Engg., CSE Dept, BUET};
+        \textbf{Fawzia Fairooz}\\ ID: 0423052028\\ MSc Engg., CSE Dept, BUET};
   \node[font=\footnotesize, text=softgray] at ([yshift=0.45cm]current page.south) {\insertdate};
 \end{tikzpicture}
 \end{frame}
@@ -49,9 +50,13 @@
 \column{0.45\textwidth}
 \begin{enumerate}
   \item Introduction
+  \begin{itemize}
+    \item \footnotesize About the Paper
+    \item \footnotesize Background
+  \end{itemize}
+  \item Challenges
   \item Motivation
   \item Related Work
-  \item Challenges
   \item Methodology
   \item Experiments \& Results
 \end{enumerate}
@@ -68,20 +73,33 @@
 % =====================================================================
 \section{Introduction}
 
-\begin{frame}{Paper at a Glance}
+\begin{frame}{Introduction}
 \begin{columns}[c]
-\column{0.58\textwidth}
-\begin{itemize}\setlength\itemsep{6pt}
-  \item \textbf{Title:} All You Need is One: Capsule Prompt Tuning with a Single Vector
-  \item \textbf{Authors:} Yiyang Liu, \dots, Qifan Wang, Cheng Han
-  \item \textbf{Venue:} NeurIPS 2025
-  \item \textbf{Area:} Parameter-efficient fine-tuning (PEFT) of LLMs
-  \item \textbf{Code:} \texttt{github.com/comeandcode/CaPT}
-\end{itemize}
-\column{0.38\textwidth}
-\begin{block}{The idea in one line}
-Replace many trainable \emph{soft prompts} with \hl{one ``capsule'' vector} per layer that
-mixes \textbf{what the task is} with \textbf{what this input says}.
+\column{0.60\textwidth}
+\small What does the title mean?\par\vspace{6pt}
+\begin{tikzpicture}[
+    key/.style={rounded corners=3pt, line width=0.8pt, minimum width=2.7cm, minimum height=0.9cm,
+                align=center, font=\small\bfseries},
+    txt/.style={text width=4.6cm, align=left, font=\small, anchor=west}]
+  \node[key, draw=accent, fill=accent!8, text=accent] (k1) at (0,0)    {All You Need\\is One};
+  \node[txt] at (1.6,0)    {Just \textbf{one} small vector per layer is enough.};
+  \node[key, draw=navy, fill=navylight, text=navy] (k2) at (0,-1.3)  {Capsule};
+  \node[txt] at (1.6,-1.3) {A tiny package of two things: \textbf{the task} and \textbf{the input}.};
+  \node[key, draw=good, fill=good!8, text=good] (k3) at (0,-2.6)     {Prompt Tuning};
+  \node[txt] at (1.6,-2.6) {Keep the LLM frozen; learn only a few \textbf{prompt} vectors.};
+\end{tikzpicture}
+
+\vspace{8pt}
+\small The paper proposes \textbf{CaPT}, a simple prompt-tuning method that uses a
+\textbf{single capsule prompt} instead of many soft prompts.
+\column{0.36\textwidth}
+\begin{block}{Paper Info}
+\footnotesize
+\textbf{Title:} All You Need is One: Capsule Prompt Tuning with a Single Vector\\[4pt]
+\textbf{Authors:} Yiyang Liu, \dots, Qifan Wang, Cheng Han\\[4pt]
+\textbf{Venue:} NeurIPS 2025\\[4pt]
+\textbf{Area:} Parameter-efficient fine-tuning (PEFT) of LLMs\\[4pt]
+\textbf{Code:} \href{https://github.com/comeandcode/CaPT}{\textcolor{navymid}{\underline{\texttt{github.com/comeandcode/CaPT}}}}
 \end{block}
 \end{columns}
 \end{frame}
@@ -114,56 +132,54 @@ mixes \textbf{what the task is} with \textbf{what this input says}.
 \end{frame}
 
 % =====================================================================
+\section{Challenges}
+
+\begin{frame}{Challenges of Soft Prompts}
+\small Despite their success, current soft prompt-based methods have \textbf{two main limitations}:
+\begin{columns}[T]
+\column{0.48\textwidth}
+\begin{itemize}
+  \item \hl{I. Limited Capability}
+  \begin{itemize}\footnotesize\setlength\itemsep{1pt}
+    \item Learn only \textbf{task-aware} guidance, the same for every input.
+    \item Mostly \textbf{attend to each other}, barely to key input tokens.
+    \item So they adapt poorly to \textbf{different inputs}.
+  \end{itemize}
+\end{itemize}
+\column{0.48\textwidth}
+\begin{itemize}
+  \item \hl{II. Inefficient Searching}
+  \begin{itemize}\footnotesize\setlength\itemsep{1pt}
+    \item Best prompt length needs a slow \textbf{grid search}.
+    \item Ends with \textbf{many prompts} $\Rightarrow$ longer input, more training cost.
+    \item Searched prompts may still miss the task; some even \textbf{hurt} accuracy.
+  \end{itemize}
+\end{itemize}
+\end{columns}
+\vspace{6pt}
+\begin{block}{Root cause}
+Task-aware prompts \textbf{lack instance-aware information} $\Rightarrow$ weak attention with the input.
+\end{block}
+\end{frame}
+
+% =====================================================================
 \section{Motivation}
 
-\begin{frame}{Motivation 1: Soft Prompts Ignore the Input}
-\centering
-\includegraphics[width=0.74\linewidth]{figures/fig1_attention_softprompt.png}
-\src{Attention on T5-Base, RTE (Liu \textit{et al.}, Fig.~1). Red = high attention, blue = low.}
-\vspace{2pt}
-\begin{columns}[T]
-\column{0.47\textwidth}
-\small\hl{Left:} 10 soft prompts mostly attend \emph{to each other}; input tokens barely look at them.
-\column{0.47\textwidth}
-\small\ok{Right:} add \emph{one} instance-aware token $\Rightarrow$ it is strongly attended and points at key tokens. Acc.\ 78.34\% $\to$ 79.33\%.
-\end{columns}
-\end{frame}
-
-\begin{frame}{Motivation 2: Searching the Prompt Length is Expensive}
-\centering
-\begin{tikzpicture}[node distance=9mm]
-  \node[box] (len) {Pick a length\\$L \in \{5, 10, 20, 100, \dots\}$};
-  \node[box, right=of len] (train) {Train the\\whole model};
-  \node[box, right=of train] (eval) {Evaluate on\\validation set};
-  \node[boxacc, right=of eval] (best) {Keep the\\best $L$};
-  \draw[arr] (len) -- (train);
-  \draw[arr] (train) -- (eval);
-  \draw[arr] (eval) -- (best);
-  \draw[arr, draw=accent] (eval.south) -- ++(0,-0.6) -| node[pos=0.25, below, font=\scriptsize, text=accent]
-        {repeat for every length (and every task)} (len.south);
-\end{tikzpicture}
-
-\vspace{12pt}
-\begin{columns}[T]
-\column{0.3\textwidth}\card[1.5cm]{navy}{Many runs}{One training run per candidate length.}
-\column{0.3\textwidth}\card[1.5cm]{navy}{Longer sequences}{More prompts $\Rightarrow$ more compute per step.}
-\column{0.3\textwidth}\card[1.5cm]{accent}{8--15$\times$ time}{Total training time vs.\ CaPT (paper, Table 2).}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Research Questions}
-\vspace{10pt}
+\begin{frame}{Motivation of the Paper}
+\small The two \hl{soft-prompt challenges} lead the authors to ask:\par\vspace{6pt}
 \begin{block}{Q1 \;--\; Capability}
-Can soft prompts \textbf{interact with the input}, so they adapt to each instance?
+``Can soft prompts be \textbf{interactive} for improved adaptation to diverse instances?''
 \end{block}
-\vspace{6pt}
+\vspace{4pt}
 \begin{block}{Q2 \;--\; Efficiency}
-Can we \textbf{remove the prompt-length search} and still keep the prompt informative?
+``Is it possible to \textbf{eliminate} the inefficient and time-consuming \textbf{grid searching} of prompt length while preserving informativeness?''
 \end{block}
-\vspace{6pt}
-\begin{exampleblock}{Paper's answer}
-Yes: build the prompt from the input itself, and use \textbf{just one} of them per layer.
+\vspace{4pt}
+\begin{exampleblock}{The authors' direction}
+Use \textbf{instance-aware} information that is already available (from the input itself) as part of the prompt,
+with a \textbf{compact, fixed-length} design, so no length search is needed.
 \end{exampleblock}
+\src{Questions quoted from Liu \textit{et al.}, Section 1. Also: attention is known to shape model behaviour, but it is largely unexplored for prompts.}
 \end{frame}
 
 % =====================================================================
@@ -191,20 +207,6 @@ Prompt-based (tiny) + instance-aware (adaptive), but with \textbf{no extra netwo
 \end{frame}
 
 % =====================================================================
-\section{Challenges}
-
-\begin{frame}{Challenges}
-\begin{columns}[T]
-\column{0.47\textwidth}
-\card[1.5cm]{navy}{1. Make prompts input-aware}{Each sentence should shape its own prompt.}\\[6pt]
-\card[1.5cm]{navy}{2. Keep it almost parameter-free}{No extra encoder, CNN or projection network.}
-\column{0.47\textwidth}
-\card[1.5cm]{navy}{3. No hyper-parameter search}{No grid search over prompt length or rank.}\\[6pt]
-\card[1.5cm]{navy}{4. Work on different architectures}{Encoder--decoder (T5) and decoder-only (Llama, Qwen).}
-\end{columns}
-\end{frame}
-
-% =====================================================================
 \section{Methodology}
 
 \begin{frame}{Three Key Findings}
@@ -218,6 +220,19 @@ They mostly attend to each other.}
 \column{0.31\textwidth}
 \card[3.3cm]{good}{Finding III}{That token acts as an \textbf{``attention anchor''}: it is attended by all input tokens
 and itself looks at key structural tokens.}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Finding I: Soft Prompts Ignore the Input}
+\centering
+\includegraphics[width=0.74\linewidth]{figures/fig1_attention_softprompt.png}
+\src{Attention on T5-Base, RTE (Liu \textit{et al.}, Fig.~1). Red = high attention, blue = low.}
+\vspace{2pt}
+\begin{columns}[T]
+\column{0.47\textwidth}
+\small\hl{Left:} 10 soft prompts mostly attend \emph{to each other}; input tokens barely look at them.
+\column{0.47\textwidth}
+\small\ok{Right:} add \emph{one} instance-aware token $\Rightarrow$ it is strongly attended and points at key tokens. Acc.\ 78.34\% $\to$ 79.33\%.
 \end{columns}
 \end{frame}
 
